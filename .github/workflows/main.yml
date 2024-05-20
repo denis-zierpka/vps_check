@@ -34,7 +34,7 @@ jobs:
         DEBIAN_FRONTEND=noninteractive apt-get install -y xrdp
         systemctl enable xrdp
         adduser xrdp ssl-cert
-        echo "runneradmin:P@ssw0rd!" | sudo chpasswd
+        echo "runneradmin:P@ssw0rd!" | chpasswd
         sed -i 's/allowed_users=console/allowed_users=anybody/' /etc/X11/Xwrapper.config
 
     - name: Create ngrok Tunnel
