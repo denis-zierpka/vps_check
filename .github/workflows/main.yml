@@ -10,10 +10,10 @@ jobs:
       image: debian:latest
 
     steps:
-    - name: Update package list and install wget
+    - name: Update package list and install wget and unzip
       run: |
         apt-get update
-        apt-get install -y wget
+        apt-get install -y wget unzip
 
     - name: Install Dependencies and Set Up Environment
       run: |
