@@ -7,6 +7,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Update system and install LXDE and VNC server
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y lxde tightvncserver
+
+    - name: Set up VNC server to use LXDE
+      run: |
+        mkdir -p ~/.vnc
+        echo "lxsession -s LXDE &" > ~/.vnc/xstartup
+        chmod +x ~/.vnc/xstartup
+
+    - name: Start VNC server
+      run: |
+        vncserver :1 -geometry 1280x800 -depth 24 -localhost no
+
     - name: Download ngrok
       run: wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip -O ngrok.zip
 
@@ -16,27 +31,6 @@ jobs:
     - name: Auth ngrok
       run: ./ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
 
-    - name: Install XFCE4 and xrdp
+    - name: Start ngrok Tunnel for VNC
       run: |
-        sudo apt-get update
-        sudo apt-get install -y xfce4 xfce4-goodies xrdp
-
-    - name: Configure .xsession and xrdp
-      run: |
-        echo "xfce4-session" > ~/.xsession
-        sudo cp ~/.xsession /etc/skel
-        sudo systemctl enable xrdp
-        sudo service xrdp start
-
-    - name: Configure policies for xrdp session
-      run: |
-        sudo sed -i.bak '/fi/a xfce4-session n' /etc/xrdp/startwm.sh
-
-    - name: Setup user for RDP
-      run: |
-        sudo usermod -a -G sudo,adm runneradmin
-        echo "runneradmin:P@ssw0rd!" | sudo chpasswd
-
-    - name: Start ngrok Tunnel
-      run: |
-        ./ngrok tcp 3389 
+        ./ngrok tcp 5901
