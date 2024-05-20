@@ -6,19 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    container:
-      image: debian:latest
-
     steps:
-    - name: Update package list and install wget and unzip
-      run: |
-        apt-get update
-        apt-get install -y wget unzip
-
-    - name: Install Dependencies and Set Up Environment
-      run: |
-        apt-get install -y --no-install-recommends lxde-core lxterminal xrdp
-
     - name: Download ngrok
       run: wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip -O ngrok.zip
 
@@ -30,13 +18,12 @@ jobs:
 
     - name: Install and configure xrdp for RDP access
       run: |
-        DEBIAN_FRONTEND=noninteractive apt-get update
-        DEBIAN_FRONTEND=noninteractive apt-get install -y xrdp
-        systemctl enable xrdp
-        adduser xrdp ssl-cert
-        useradd -m runneradmin
-        echo "runneradmin:P@ssw0rd!" | chpasswd
-        sed -i 's/allowed_users=console/allowed_users=anybody/' /etc/X11/Xwrapper.config
+        sudo DEBIAN_FRONTEND=noninteractive apt-get update
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xrdp
+        sudo systemctl enable xrdp
+        sudo adduser xrdp ssl-cert
+        echo "runneradmin:P@ssw0rd!" | sudo chpasswd
+        sudo sed -i 's/allowed_users=console/allowed_users=anybody/' /etc/X11/Xwrapper.config
 
     - name: Create ngrok Tunnel
       run: ./ngrok tcp 3389
