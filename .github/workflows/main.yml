@@ -6,38 +6,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    container:
+      image: debian:latest # Specify the Docker image
+
     steps:
-    - name: Install LXDE and VNC server
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y lxde-core lxterminal tightvncserver
+    - name: Download ngrok
+      run: wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip -O ngrok.zip
 
-    - name: Set VNC password
-      run: |
-        mkdir -p ~/.vnc
-        echo -e "yourVNCpasswordnyourVNCpassword" | vncpasswd -f > ~/.vnc/passwd
-        chmod 600 ~/.vnc/passwd
-
-    - name: Set up VNC server to use LXDE
-      run: |
-        echo "#!/bin/bash
-        xrdb $HOME/.Xresources
-        startlxde &" > ~/.vnc/xstartup
-        chmod +x ~/.vnc/xstartup
-
-    - name: Start VNC server
-      run: |
-        vncserver -kill :1 || true
-        vncserver :1 -geometry 1280x800 -depth 24
-
-    - name: Download and extract ngrok
-      run: |
-        wget -q https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip -O ngrok.zip
-        unzip -o ngrok.zip
+    - name: Extract ngrok
+      run: unzip ngrok.zip
 
     - name: Auth ngrok
       run: ./ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
 
-    - name: Start ngrok Tunnel for VNC
+    - name: Install and configure xrdp for RDP access
       run: |
-        ./ngrok tcp 5901 
+        sudo DEBIAN_FRONTEND=noninteractive apt-get update
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xrdp
+        sudo systemctl enable xrdp
+        sudo adduser xrdp ssl-cert
+        echo "runneradmin:P@ssw0rd!" | sudo chpasswd
+        sudo sed -i 's/allowed_users=console/allowed_users=anybody/' /etc/X11/Xwrapper.config
+
+    - name: Create ngrok Tunnel
+      run: ./ngrok tcp 3389 &
