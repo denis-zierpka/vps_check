@@ -18,18 +18,19 @@ jobs:
 
     - name: Install XFCE4 and xrdp
       run: |
-        sudo DEBIAN_FRONTEND=noninteractive apt-get update
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xfce4 xfce4-goodies xrdp
-        echo xfce4-session > ~/.xsession
+        sudo apt-get update
+        sudo apt-get install -y xfce4 xfce4-goodies xrdp
 
-    - name: Configure xrdp
+    - name: Configure .xsession and xrdp
       run: |
-        sudo cp /etc/xrdp/xrdp.ini /etc/xrdp/xrdp.ini.bak
-        sudo sed -i 's/3389/3390/' /etc/xrdp/xrdp.ini
-        sudo sed -i 's/max_bpp=32/max_bpp=24/' /etc/xrdp/xrdp.ini
-        sudo sed -i 's/xserverbpp=24/xserverbpp=16/' /etc/xrdp/xrdp.ini
-        echo "xfce4-session" | sudo tee /etc/skel/.xsession
-        sudo systemctl restart xrdp
+        echo "xfce4-session" > ~/.xsession
+        sudo cp ~/.xsession /etc/skel
+        sudo systemctl enable xrdp
+        sudo service xrdp start
+
+    - name: Configure policies for xrdp session
+      run: |
+        sudo sed -i.bak '/fi/a xfce4-session n' /etc/xrdp/startwm.sh
 
     - name: Setup user for RDP
       run: |
@@ -38,4 +39,4 @@ jobs:
 
     - name: Start ngrok Tunnel
       run: |
-        ./ngrok tcp 3390 --region=us
+        ./ngrok tcp 3389 
