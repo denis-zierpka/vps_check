@@ -18,6 +18,10 @@ jobs:
 
     - name: Install and configure xrdp for RDP access
       run: |
+        sudo apt install xrdp
+        sudo systemctl start xrdp
+        sudo ufw allow 3389
+        sudo ufw reload
         sudo DEBIAN_FRONTEND=noninteractive apt-get update
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xrdp
         sudo systemctl enable xrdp
